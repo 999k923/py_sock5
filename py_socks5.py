@@ -263,7 +263,7 @@ class IPForwarder:
 if __name__ == '__main__':
     HOST = '0.0.0.0'
     PORT = 8008
-    IP_SERVICE_CREDENTIALS = {'xiaoanping': 'Xiao123456%^^'}
+    IP_SERVICE_CREDENTIALS = {'admin': 'xiao123456'}
 
 # ========================================================================
     if not IP_SERVICE_CREDENTIALS:
