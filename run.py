@@ -191,11 +191,18 @@ class IPForwarder:
             remote_socket.close()
 
 # ========================== 启动服务 ==========================
+# ========================== 启动服务 ==========================
 if __name__ == '__main__':
     HOST = '0.0.0.0'
     HTTP_PORT = 8008
     SOCKS5_PORT = 8009
-    IP_SERVICE_CREDENTIALS = {'admin': 'xiao123456'}
+
+    SOCKS_USER = os.getenv("SOCKS_USER", "admin")
+    SOCKS_PASS = os.getenv("SOCKS_PASS", "xiao123456")
+
+    IP_SERVICE_CREDENTIALS = {
+        SOCKS_USER: SOCKS_PASS
+    }
 
     ip_forwarder = IPForwarder(IP_SERVICE_CREDENTIALS)
 
