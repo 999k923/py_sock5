@@ -189,13 +189,18 @@ class IPForwarder:
             pass
         finally:
             remote_socket.close()
-
 # ========================== 启动服务 ==========================
 if __name__ == '__main__':
     HOST = '0.0.0.0'
     HTTP_PORT = 8008
     SOCKS5_PORT = 8009
-    IP_SERVICE_CREDENTIALS = {'admin': 'xiao123456'}
+
+    SOCKS5_USER = os.getenv("SOCKS5_USER", "admin")
+    SOCKS5_PASS = os.getenv("SOCKS5_PASS", "password123")
+
+    IP_SERVICE_CREDENTIALS = {
+        SOCKS5_USER: SOCKS5_PASS
+    }
 
     ip_forwarder = IPForwarder(IP_SERVICE_CREDENTIALS)
 
@@ -211,7 +216,11 @@ if __name__ == '__main__':
         print(f"HTTP 服务启动：{HOST}:{HTTP_PORT}")
         while True:
             client, addr = http_sock.accept()
-            threading.Thread(target=handle_http_request, args=(client,), daemon=True).start()
+            threading.Thread(
+                target=handle_http_request,
+                args=(client,),
+                daemon=True
+            ).start()
 
     # SOCKS5 服务线程
     def start_socks5():
@@ -222,7 +231,11 @@ if __name__ == '__main__':
         print(f"SOCKS5 服务启动：{HOST}:{SOCKS5_PORT}")
         while True:
             client, addr = socks_sock.accept()
-            threading.Thread(target=ip_forwarder.process_request, args=(client,), daemon=True).start()
+            threading.Thread(
+                target=ip_forwarder.process_request,
+                args=(client,),
+                daemon=True
+            ).start()
 
     threading.Thread(target=start_http, daemon=True).start()
     threading.Thread(target=start_socks5, daemon=True).start()
@@ -233,3 +246,4 @@ if __name__ == '__main__':
             threading.Event().wait(1)
     except KeyboardInterrupt:
         print("INFO: 停止服务")
+
