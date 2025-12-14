@@ -1,0 +1,9 @@
+docker run -d \
+  -p 8008:8008 \       # HTTP 掩护端口
+  -p 8009:8009 \       # 隐藏 SOCKS5 端口
+  -e USER=admin \      # SOCKS5 用户名
+  -e PASS=123456 \     # SOCKS5 密码
+  -e HTTP_PORT=8008 \  # 可选，HTTP 端口
+  -e SOCKS5_PORT=8009 \ # 可选，隐藏 SOCKS5 端口
+  --name system-helper \
+  system-helper
