@@ -1,9 +1,15 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-COPY run.py /app/run.py
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 8009
+COPY run.py .
 
-CMD ["python3", "run.py"]
+EXPOSE 8008 8009
+
+CMD ["python", "run.py"]
