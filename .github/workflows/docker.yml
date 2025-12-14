@@ -27,4 +27,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/timezone-proxy:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/time-proxy:latest
