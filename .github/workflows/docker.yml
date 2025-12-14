@@ -27,4 +27,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/time1:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/time2:latest
