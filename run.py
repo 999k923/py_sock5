@@ -55,8 +55,8 @@ def start_http():
 
 # ================== SOCKS5 服务 ==================
 SOCKS5_PORT = int(os.getenv("SOCKS5_PORT", "8009"))
-SOCKS5_USER = os.getenv("SOCKS5_USER", "admin")
-SOCKS5_PASS = os.getenv("SOCKS5_PASS", "password123")
+SOCKS5_USER = os.getenv("USER", "admin")
+SOCKS5_PASS = os.getenv("PASS", "password123")
 SOCKS_VERSION = 5
 AUTH_USERPASS = 0x02
 
@@ -169,7 +169,7 @@ def start_socks5():
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     s.bind(("0.0.0.0", SOCKS5_PORT))
     s.listen(100)
-    print(f"[INFO] SOCKS5 listening on {SOCKS5_PORT}")
+    print(f"[INFO] 隐藏 listening on {SOCKS5_PORT}")
     while True:
         client, _ = s.accept()
         threading.Thread(target=server.handle_client, args=(client,), daemon=True).start()
