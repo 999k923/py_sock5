@@ -13,201 +13,213 @@ except ImportError:
     setproctitle = None
 
 # ========================== HTTP 配置 ==========================
-COMMON_TIMEZONES = [
+COMMON_TIMEZONES = sorted([
     "UTC", "Asia/Shanghai", "Asia/Tokyo", "Asia/Dubai", "Asia/Singapore",
-    "Europe/London", "Europe/Berlin", "Europe/Paris",
-    "America/New_York", "America/Los_Angeles"
-]
+    "Europe/London", "Europe/Berlin", "Europe/Paris", "Europe/Moscow",
+    "Europe/Warsaw", "America/New_York", "America/Chicago",
+    "America/Los_Angeles", "Pacific/Auckland", "Australia/Sydney"
+])
 
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><title>时区时间查询</title></head>
+<head>
+<meta charset="UTF-8">
+<title>时区时间查询</title>
+</head>
 <body>
-<form method="GET">
+<form method="GET" action="/">
 <select name="timezone" onchange="this.form.submit()">
-<option value="" disabled {init}>-- 选择时区 --</option>
-{options}
+<option value="" disabled {initial_select_state}>--- 请选择一个时区 ---</option>
+{options_placeholder}
 </select>
 </form>
-<div>{result}</div>
+<div>{result_placeholder}</div>
 </body>
-</html>
-"""
+</html>"""
 
-def generate_html(result, selected=None):
-    opts = ""
+def generate_html_page(result_html, selected_tz=None):
+    options_html = ""
     for tz in COMMON_TIMEZONES:
-        sel = " selected" if tz == selected else ""
-        opts += f'<option value="{tz}"{sel}>{tz}</option>'
+        is_selected = ' selected' if tz == selected_tz else ''
+        options_html += f'<option value="{tz}"{is_selected}>{tz}</option>'
     return HTML_TEMPLATE.format(
-        options=opts,
-        result=result,
-        init="selected" if not selected else ""
+        options_placeholder=options_html,
+        result_placeholder=result_html,
+        initial_select_state='selected' if not selected_tz else ''
     )
 
-def handle_http(client):
+def handle_http_request(client_socket):
+    result_html = "<p>请从下拉菜单中选择一个时区。</p>"
+    selected_tz_name = None
     try:
-        req = client.recv(4096).decode(errors="ignore")
-        if not req:
-            return
-        path = req.split(" ")[1]
-        q = parse_qs(urlparse(path).query)
-        tz = q.get("timezone", [None])[0]
+        request_data = client_socket.recv(4096).decode('utf-8', 'ignore')
+        if not request_data:
+            client_socket.close(); return
 
-        result = "<p>请选择一个时区</p>"
-        if tz:
+        first_line = request_data.split('\r\n')[0]
+        if ' ' not in first_line: client_socket.close(); return
+        
+        path = first_line.split(' ')[1]
+        parsed_url = urlparse(path)
+        query_params = parse_qs(parsed_url.query)
+
+        selected_tz_name = query_params.get('timezone', [None])[0]
+
+        if selected_tz_name:
             try:
-                now = datetime.now(zoneinfo.ZoneInfo("UTC")).astimezone(
-                    zoneinfo.ZoneInfo(tz)
-                )
-                result = f"<b>{tz}</b><br>{now.strftime('%Y-%m-%d %H:%M:%S %Z')}"
+                target_tz = zoneinfo.ZoneInfo(selected_tz_name)
+                utc_now = datetime.now(zoneinfo.ZoneInfo("UTC"))
+                local_time = utc_now.astimezone(target_tz)
+                formatted_time = local_time.strftime('%Y-%m-%d %H:%M:%S %Z')
+                result_html = f"<b>{selected_tz_name}</b><br>当前时间: {formatted_time}"
             except Exception as e:
-                result = f"<span style='color:red'>{e}</span>"
-
-        html = generate_html(result, tz)
-        resp = (
+                result_html = f"<p style='color: red;'>查询时发生错误: {e}</p>"
+        
+        final_html = generate_html_page(result_html, selected_tz_name)
+        http_response = (
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: text/html; charset=utf-8\r\n"
-            f"Content-Length: {len(html.encode())}\r\n"
+            f"Content-Length: {len(final_html.encode('utf-8'))}\r\n"
             "Connection: close\r\n\r\n"
-            f"{html}"
-        )
-        client.sendall(resp.encode())
+            f"{final_html}"
+        ).encode('utf-8')
+        
+        client_socket.sendall(http_response)
+
+    except Exception as e:
+        print(f"[ERROR] HTTP 请求处理异常: {e}")
     finally:
-        client.close()
+        client_socket.close()
 
-# ========================== SOCKS5 ==========================
-SOCKS_VERSION = 5
+# ========================== SOCKS5 配置 ==========================
+PROTOCOL_VERSION = 5
+AUTH_METHOD = 0x02
 
-class Socks5Server:
-    def __init__(self, users):
-        self.users = users
+class IPForwarder:
+    def __init__(self, credentials):
+        self.credentials = credentials
 
-    def handle(self, client):
+    def process_request(self, client_socket):
         try:
-            # ---- handshake ----
-            ver, nmethods = client.recv(2)
-            methods = client.recv(nmethods)
-
-            if 0x02 in methods:
-                client.sendall(struct.pack("!BB", 5, 0x02))
-                if not self.auth(client):
-                    return
-            elif 0x00 in methods:
-                client.sendall(struct.pack("!BB", 5, 0x00))
+            header = client_socket.recv(2)
+            if not header or header[0] != PROTOCOL_VERSION: return
+            nmethods = header[1]
+            methods = client_socket.recv(nmethods)
+            if AUTH_METHOD not in methods:
+                client_socket.sendall(struct.pack("!BB", PROTOCOL_VERSION, 0xFF)); return
+            client_socket.sendall(struct.pack("!BB", PROTOCOL_VERSION, AUTH_METHOD))
+            if not self.authenticate(client_socket): return
+            header = client_socket.recv(4)
+            if not header or len(header) < 4: return
+            ver, cmd, rsv, atyp = struct.unpack("!BBBB", header)
+            if ver != PROTOCOL_VERSION or cmd != 0x01:
+                self.send_reply(client_socket, 0x07); return
+            if atyp == 0x01:
+                dest_addr = socket.inet_ntoa(client_socket.recv(4))
+            elif atyp == 0x03:
+                domain_len = client_socket.recv(1)[0]
+                dest_addr = client_socket.recv(domain_len).decode('utf-8')
+            elif atyp == 0x04:
+                dest_addr = socket.inet_ntop(socket.AF_INET6, client_socket.recv(16))
             else:
-                client.sendall(struct.pack("!BB", 5, 0xFF))
-                return
-
-            # ---- request ----
-            ver, cmd, _, atyp = struct.unpack("!BBBB", client.recv(4))
-            if cmd != 1:
-                self.reply(client, 0x07)
-                return
-
-            if atyp == 1:   # IPv4
-                addr = socket.inet_ntoa(client.recv(4))
-            elif atyp == 3: # domain
-                l = client.recv(1)[0]
-                addr = client.recv(l).decode()
-            elif atyp == 4: # IPv6
-                addr = socket.inet_ntop(socket.AF_INET6, client.recv(16))
-            else:
-                self.reply(client, 0x08)
-                return
-
-            port = struct.unpack("!H", client.recv(2))[0]
-
-            # ---- connect (IPv4/IPv6 auto) ----
-            remote = None
-            for af, st, pr, _, sa in socket.getaddrinfo(addr, port, socket.AF_UNSPEC, socket.SOCK_STREAM):
-                try:
-                    remote = socket.socket(af, st, pr)
-                    remote.connect(sa)
-                    break
-                except Exception:
-                    continue
-
-            if not remote:
-                self.reply(client, 0x01)
-                return
-
-            bind_addr, bind_port = remote.getsockname()[:2]
-            self.reply(client, 0x00)
-
-            self.relay(client, remote)
-
+                self.send_reply(client_socket, 0x08); return
+            dest_port = struct.unpack('!H', client_socket.recv(2))[0]
+            try:
+                remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                remote_socket.connect((dest_addr, dest_port))
+                bind_addr, bind_port = remote_socket.getsockname()
+                self.send_reply(client_socket, 0x00, socket.inet_aton(bind_addr), bind_port)
+            except Exception:
+                self.send_reply(client_socket, 0x01); return
+            self.relay_data(client_socket, remote_socket)
+        except Exception as e:
+            print(f"[ERROR] SOCKS5 处理异常: {e}")
         finally:
-            client.close()
+            client_socket.close()
 
-    def auth(self, client):
-        ver = client.recv(1)[0]
-        ulen = client.recv(1)[0]
-        user = client.recv(ulen).decode()
-        plen = client.recv(1)[0]
-        pwd = client.recv(plen).decode()
+    def authenticate(self, client_socket):
+        try:
+            header = client_socket.recv(2)
+            if not header or header[0] != 0x01: return False
+            ulen = header[1]
+            username = client_socket.recv(ulen).decode('utf-8')
+            plen = client_socket.recv(1)[0]
+            password = client_socket.recv(plen).decode('utf-8')
+            if self.credentials.get(username) == password:
+                client_socket.sendall(struct.pack("!BB", 0x01, 0x00)); return True
+            else:
+                client_socket.sendall(struct.pack("!BB", 0x01, 0x01)); return False
+        except Exception:
+            return False
 
-        if self.users.get(user) == pwd:
-            client.sendall(b"\x01\x00")
-            return True
-        client.sendall(b"\x01\x01")
-        return False
+    def send_reply(self, client_socket, rep, bnd_addr=b'\x00\x00\x00\x00', bnd_port=0):
+        reply = struct.pack("!BBBB", PROTOCOL_VERSION, rep, 0x00, 0x01) + bnd_addr + struct.pack("!H", bnd_port)
+        client_socket.sendall(reply)
 
-    def reply(self, client, code):
-        client.sendall(
-            struct.pack("!BBBBIH", 5, code, 0, 1, 0, 0)
-        )
-
-    def relay(self, c, r):
+    def relay_data(self, client_socket, remote_socket):
         try:
             while True:
-                rs, _, _ = select.select([c, r], [], [], 300)
-                if not rs:
-                    break
-                for s in rs:
-                    data = s.recv(4096)
-                    if not data:
-                        return
-                    (r if s is c else c).sendall(data)
+                readable, _, _ = select.select([client_socket, remote_socket], [], [], 300)
+                if not readable: break
+                for sock in readable:
+                    data = sock.recv(4096)
+                    if not data: return
+                    other_sock = remote_socket if sock is client_socket else client_socket
+                    other_sock.sendall(data)
+        except Exception:
+            pass
         finally:
-            r.close()
+            remote_socket.close()
 
-# ========================== 启动 ==========================
-if __name__ == "__main__":
-    HOST = "0.0.0.0"
+# ========================== 启动服务 ==========================
+if __name__ == '__main__':
+    HOST = '0.0.0.0'
     HTTP_PORT = 8008
-    SOCKS_PORT = 8009
+    SOCKS5_PORT = 8009
 
-    USER = os.getenv("SOCKS_USER", "admin")
-    PASS = os.getenv("SOCKS_PASS", "xiao123456")
+    SOCKS_USER = os.getenv("SOCKS_USER", "admin")
+    SOCKS_PASS = os.getenv("SOCKS_PASS", "xiao123456")
 
-    server = Socks5Server({USER: PASS})
+    IP_SERVICE_CREDENTIALS = {SOCKS_USER: SOCKS_PASS}
+    ip_forwarder = IPForwarder(IP_SERVICE_CREDENTIALS)
 
     if setproctitle:
         setproctitle.setproctitle("system-helper")
 
-    def http_srv():
-        s = socket.socket()
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind((HOST, HTTP_PORT))
-        s.listen()
-        print(f"HTTP :{HTTP_PORT}")
+    # HTTP 服务线程
+    def start_http():
+        try:
+            http_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            http_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            http_sock.bind((HOST, HTTP_PORT))
+            http_sock.listen(100)
+            print(f"[INFO] HTTP 服务启动：{HOST}:{HTTP_PORT}")
+            while True:
+                client, addr = http_sock.accept()
+                threading.Thread(target=handle_http_request, args=(client,), daemon=True).start()
+        except Exception as e:
+            print(f"[ERROR] HTTP 服务启动失败: {e}")
+
+    # SOCKS5 服务线程
+    def start_socks5():
+        try:
+            socks_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            socks_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            socks_sock.bind((HOST, SOCKS5_PORT))
+            socks_sock.listen(100)
+            print(f"[INFO] SOCKS5 服务启动：{HOST}:{SOCKS5_PORT}")
+            while True:
+                client, addr = socks_sock.accept()
+                threading.Thread(target=ip_forwarder.process_request, args=(client,), daemon=True).start()
+        except Exception as e:
+            print(f"[ERROR] SOCKS5 服务启动失败: {e}")
+
+    threading.Thread(target=start_http, daemon=True).start()
+    threading.Thread(target=start_socks5, daemon=True).start()
+
+    print("[INFO] 两个服务已启动，按 Ctrl+C 停止")
+    try:
         while True:
-            c, _ = s.accept()
-            threading.Thread(target=handle_http, args=(c,), daemon=True).start()
-
-    def socks_srv():
-        s = socket.socket()
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind((HOST, SOCKS_PORT))
-        s.listen()
-        print(f"SOCKS5 :{SOCKS_PORT}")
-        while True:
-            c, _ = s.accept()
-            threading.Thread(target=server.handle, args=(c,), daemon=True).start()
-
-    threading.Thread(target=http_srv, daemon=True).start()
-    threading.Thread(target=socks_srv, daemon=True).start()
-
-    print("INFO: services started")
-    threading.Event().wait()
+            threading.Event().wait(1)
+    except KeyboardInterrupt:
+        print("[INFO] 停止服务")
